@@ -318,11 +318,31 @@ int main(void) {
 
 		else DMA1_Channel1->CMAR = (uint32_t) sine; // SrcAddress
 
-		freq = (adcResultsDMA[0] >> 3);
+//		freq = (adcResultsDMA[0] >> 3);
+
+//		if ((adcResultsDMA[1] >> 50) > 10) ctr_scale =
+//		else ctr_scale = 1;
+
+		phase_add = (adcResultsDMA[1] >> 6);
+
+		ctr_scale = 1;
+
+//		phase_add = 10;
+		table_lookup = wave_LUT[phase];
+		ad0_bitshift = (adcResultsDMA[0] >> 3);
+		freq = ad0_bitshift + (table_lookup) * 2;
 
 
 		if (freq <= 0) freq = 1;
 		TIM2 -> ARR = freq;
+
+		ctr += 1;
+		if(ctr%ctr_scale == 0){
+			phase += phase_add;
+		}
+
+		phase = phase%NS;
+		ctr = ctr%NS;
 
 		/* USER CODE BEGIN 3 */
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adcResultsDMA, adcChannelCount);
